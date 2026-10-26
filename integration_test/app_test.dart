@@ -3,6 +3,8 @@
 // Needs a running cloud server with demo data and a connected Pi. See
 // integration_test/demo/README.md. Run with:
 //   flutter test integration_test/app_test.dart -d <simulator> --dart-define=SERVER_URL=http://localhost:8000
+import 'package:agrynex/api/api_client.dart';
+import 'package:agrynex/config.dart';
 import 'package:agrynex/main.dart' as app;
 import 'package:agrynex/widgets/alert_tile.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +21,15 @@ void main() {
   binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
   testWidgets('demo walkthrough', timeout: const Timeout(Duration(minutes: 5)), (tester) async {
+    // Start with detection off, so the coyote in the Pi's test video doesn't
+    // set off the siren until the finale. (YOLO also sometimes sees a person
+    // in that video, so person detection stays off throughout.)
+    final setup = ApiClient(defaultServerUrl);
+    setup.token = (await setup.login(email, password)).$1;
+    await setup.control('animal_detection', false);
+    await setup.control('human_detection', false);
+    await setup.control('system', true);
+
     // Start signed out.
     await const FlutterSecureStorage().deleteAll();
     app.main();
@@ -32,20 +43,9 @@ void main() {
     await hold(tester, 0.6);
     await tapOn(tester, find.widgetWithText(FilledButton, 'Sign in'));
 
-    // Dashboard: the Pi is online.
-    await waitFor(tester, find.text('Online · watching'));
+    // Dashboard: the Pi is online, with detection off.
+    await waitFor(tester, find.text('Online · detection off'));
     await hold(tester, 3);
-
-    // Person detection off and back on. The switch moves once the server confirms.
-    final person = find.widgetWithText(SwitchListTile, 'Person detection');
-    Finder personSwitch(bool on) =>
-        find.descendant(of: person, matching: find.byWidgetPredicate((w) => w is Switch && w.value == on));
-    await tapOn(tester, person);
-    await waitFor(tester, personSwitch(false));
-    await hold(tester, 2);
-    await tapOn(tester, person);
-    await waitFor(tester, personSwitch(true));
-    await hold(tester, 1);
 
     // Siren and sprinkler, switched by hand.
     for (final name in ['Siren', 'Sprinkler']) {
@@ -105,8 +105,21 @@ void main() {
     await waitFor(tester, find.text('Online · system off'));
     await hold(tester, 3);
     await tapOn(tester, system);
+    await waitFor(tester, find.text('Online · detection off'));
+    await hold(tester, 2);
+
+    // Finale: animal detection on, and the coyote sets off the siren and sprinkler.
+    await tapOn(tester, find.widgetWithText(SwitchListTile, 'Animal detection'));
     await waitFor(tester, find.text('Online · watching'));
-    await hold(tester, 3);
+    await waitFor(
+      tester,
+      find.descendant(
+        of: find.widgetWithText(SwitchListTile, 'Siren'),
+        matching: find.textContaining('Running after a detection'),
+      ),
+      timeout: 90,
+    );
+    await hold(tester, 6);
   });
 }
 

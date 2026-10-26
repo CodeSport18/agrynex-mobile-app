@@ -3,13 +3,16 @@
 `integration_test/app_test.dart` walks through the whole app at a pace you can watch. It covers:
 
 1. Signing in.
-2. The Pi's status.
+2. The Pi's status, with detection off.
 3. Switching the siren and sprinkler by hand.
 4. Live view.
 5. The alerts list and one alert's clip.
 6. Settings.
 7. Users.
 8. Turning the system off and back on.
+9. Finale: turning animal detection on. The coyote in the video sets off the siren and sprinkler, and a live alert may arrive.
+
+Before the app opens, the test uses the API to turn animal and person detection off and the system on, so every run starts the same way. Person detection stays off throughout because YOLO sometimes mistakes something in the coyote video for a person, which would set off the siren during the manual-control step.
 
 Taps show a white circle so they're visible on video. The run takes about 90 seconds.
 
@@ -36,13 +39,7 @@ AGRYNEX_DEVICE_TOKEN=local-device-token AGRYNEX_VIDEO_SOURCE="coyote_meets_camer
 python newer_yolo_detection.py
 ```
 
-Wait for the Pi to make its first detection, so the dashboard shows a "last detection" time. Then turn detection off on the Pi, so automatic siren runs don't interfere with the manual-control part of the demo. Use the port the Pi printed:
-
-```bash
-curl -X POST localhost:5002/api/detection_settings -H 'Content-Type: application/json' -d '{"animal":false,"human":false}'
-```
-
-Delete any alerts the Pi made while it was detecting, either from the dashboard or with `DELETE /api/alerts/<id>`.
+Wait for the Pi to make its first detection, so the dashboard shows a "last detection" time. Then turn animal and person detection off from the dashboard, so the Pi stops making alerts while you seed. Delete any alerts it made, either from the dashboard or with `DELETE /api/alerts/<id>`.
 
 ## 2. Seed demo data
 
