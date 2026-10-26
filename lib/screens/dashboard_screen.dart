@@ -89,7 +89,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             if (snapshot == null)
-              const Card(child: Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())))
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              )
             else ...[
               _statusCard(snapshot),
               _controlsCard(snapshot),
@@ -102,12 +107,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             for (final a in _latest)
               AlertTile(
                 alert: a,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => AlertDetailScreen(alert: a)),
-                ).then((deleted) {
-                  if (deleted == true) setState(() => _latest.removeWhere((x) => x.id == a.id));
-                }),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AlertDetailScreen(alert: a)))
+                    .then((deleted) {
+                      if (deleted == true) setState(() => _latest.removeWhere((x) => x.id == a.id));
+                    }),
               ),
           ],
         ),
@@ -121,16 +124,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final (String label, Color color, String detail) = !d.online
         ? ('Offline', colors.outline, 'Last seen ${timeAgo(d.lastSeen)}')
         : !d.systemOn
-            ? ('Online · system off', Colors.orange.shade700, 'Detection and camera are paused')
-            : (
-                'Online · watching',
-                colors.primary,
-                !d.cameraOk
-                    ? "Camera isn't working"
-                    : d.lastDetectionAt == null
-                        ? 'No detections yet'
-                        : 'Last detection ${timeAgo(d.lastDetectionAt)}',
-              );
+        ? ('Online · system off', Colors.orange.shade700, 'Detection and camera are paused')
+        : !s.settings.animalDetection && !s.settings.humanDetection
+        ? ('Online · detection off', Colors.orange.shade700, 'Animal and person detection are both off')
+        : (
+            'Online · watching',
+            colors.primary,
+            !d.cameraOk
+                ? "Camera isn't working"
+                : d.lastDetectionAt == null
+                ? 'No detections yet'
+                : 'Last detection ${timeAgo(d.lastDetectionAt)}',
+          );
     return Card(
       child: ListTile(
         leading: Icon(Icons.memory, color: color),
@@ -166,8 +171,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Card(
       child: Column(
         children: [
-          row('system', 'System', s.settings.systemOn ? 'Detection and camera on' : 'Detection and camera paused',
-              s.settings.systemOn, true, Icons.power_settings_new),
+          row(
+            'system',
+            'System',
+            s.settings.systemOn ? 'Detection and camera on' : 'Detection and camera paused',
+            s.settings.systemOn,
+            true,
+            Icons.power_settings_new,
+          ),
+          const Divider(height: 1),
+          row(
+            'animal_detection',
+            'Animal detection',
+            'Birds, cats, cows, dogs, horses, sheep',
+            s.settings.animalDetection,
+            true,
+            Icons.pets,
+          ),
+          const Divider(height: 1),
+          row(
+            'human_detection',
+            'Person detection',
+            'People entering the farm',
+            s.settings.humanDetection,
+            true,
+            Icons.directions_walk,
+          ),
           const Divider(height: 1),
           row('siren', 'Siren', _outputDetail(d, d.siren), d.siren.on, d.online, Icons.campaign),
           const Divider(height: 1),
@@ -181,10 +210,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final String? problem = !s.settings.liveViewEnabled
         ? 'Live view is turned off in Settings'
         : !s.device.online
-            ? 'The Raspberry Pi is offline'
-            : !s.settings.systemOn
-                ? 'The system is off, so the camera is paused'
-                : null;
+        ? 'The Raspberry Pi is offline'
+        : !s.settings.systemOn
+        ? 'The system is off, so the camera is paused'
+        : null;
     return Card(
       child: ListTile(
         leading: const Icon(Icons.videocam),

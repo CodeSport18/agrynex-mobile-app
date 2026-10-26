@@ -36,6 +36,17 @@ void main() {
     await waitFor(tester, find.text('Online · watching'));
     await hold(tester, 3);
 
+    // Person detection off and back on. The switch moves once the server confirms.
+    final person = find.widgetWithText(SwitchListTile, 'Person detection');
+    Finder personSwitch(bool on) =>
+        find.descendant(of: person, matching: find.byWidgetPredicate((w) => w is Switch && w.value == on));
+    await tapOn(tester, person);
+    await waitFor(tester, personSwitch(false));
+    await hold(tester, 2);
+    await tapOn(tester, person);
+    await waitFor(tester, personSwitch(true));
+    await hold(tester, 1);
+
     // Siren and sprinkler, switched by hand.
     for (final name in ['Siren', 'Sprinkler']) {
       final tile = find.widgetWithText(SwitchListTile, name);

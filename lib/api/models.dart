@@ -19,6 +19,8 @@ class User {
 
 class Settings {
   final bool systemOn;
+  final bool animalDetection;
+  final bool humanDetection;
   final bool liveViewEnabled;
   final bool clipsEnabled;
   final bool snapshotsEnabled;
@@ -31,6 +33,8 @@ class Settings {
 
   Settings({
     required this.systemOn,
+    required this.animalDetection,
+    required this.humanDetection,
     required this.liveViewEnabled,
     required this.clipsEnabled,
     required this.snapshotsEnabled,
@@ -44,6 +48,9 @@ class Settings {
 
   factory Settings.fromJson(Map<String, dynamic> j) => Settings(
         systemOn: j['system_on'] as bool,
+        // Older servers don't send these, and detection was always on there.
+        animalDetection: (j['animal_detection'] as bool?) ?? true,
+        humanDetection: (j['human_detection'] as bool?) ?? true,
         liveViewEnabled: j['live_view_enabled'] as bool,
         clipsEnabled: j['clips_enabled'] as bool,
         snapshotsEnabled: j['snapshots_enabled'] as bool,

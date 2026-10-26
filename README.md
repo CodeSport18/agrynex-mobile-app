@@ -2,7 +2,7 @@
 
 A Flutter app for iOS and Android that works with the [Agrynex cloud server](https://github.com/CodeSport18/agrynex-cloud-server).
 
-- **Dashboard:** whether the Pi is online, plus switches for the system, siren and sprinkler, with countdowns while they run.
+- **Dashboard:** whether the Pi is online, plus switches for the system, animal detection, person detection, siren and sprinkler. The siren and sprinkler show countdowns while they run. Changes made anywhere, including on the Pi's own web page, show up right away.
 - **Live view:** the camera, streamed only while this screen is open.
 - **Alerts:** new alerts appear as they happen. Each one has a snapshot, a playable clip and what was detected.
 - **Settings:** video features, clip length, siren and sprinkler timing, time between alerts, and how long to keep alerts. Only admins can change them.
